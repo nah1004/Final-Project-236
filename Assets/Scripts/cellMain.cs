@@ -48,6 +48,7 @@ public class cellMain : MonoBehaviour
             smoothMap();
         }
         seedGrass();
+        //GenBorder();
         VisMap();
     }
 
@@ -201,7 +202,7 @@ public class cellMain : MonoBehaviour
             for (int y = 0; y < mapY; y++) {
                 for (int z = 0; z < mapZ; z++)
                 {
-                    if (x == 0 || y == 0 || x == mapX - 1 || y == mapY - 1 || z == 0 || z == mapZ - 1)
+                    if (x == 0 || y == 0 || x == mapX - 1 || z == 0 || z == mapZ - 1)
                     {
                         AddCell(x, y, z, "border");
                     }

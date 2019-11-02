@@ -57,9 +57,14 @@ public class characterMovement : MonoBehaviour
             gameObject.transform.Translate(camHolder.transform.right * speed * Time.deltaTime);
         }
 
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            gameObject.GetComponent<Rigidbody>().AddForce(new Vector3(0, jumpForce * 100, 0));
+        if (Input.GetKey(KeyCode.Space))
+        {
+            gameObject.transform.Translate(camHolder.transform.up * speed * Time.deltaTime);
         }
+        else if (Input.GetKey(KeyCode.LeftShift)) {
+            gameObject.transform.Translate(camHolder.transform.up * -speed * Time.deltaTime);
+        }
+    
 
         camRotX -= Input.GetAxis("Mouse Y") * lookSensitivity;
         camRotY += Input.GetAxis("Mouse X") * lookSensitivity;
@@ -71,6 +76,5 @@ public class characterMovement : MonoBehaviour
         }
         camHolder.transform.rotation = Quaternion.Euler(0, camRotY, 0);
         cam.transform.rotation = Quaternion.Euler(camRotX, camRotY, 0);
-        Debug.Log(camRotX);
     }
 }
