@@ -21,10 +21,14 @@ public class cellMain : MonoBehaviour
     private List<List<int>> moore;
     //Public map Variables are so they are visible in the editor so i can tweak generation
     //Map Size
+    [Range(10,60)]
     public int mapX;
+    [Range(10, 60)]
     public int mapY;
+    [Range(10, 60)]
     public int mapZ;
     //Map Density
+    [Range(0, 100)]
     public int mapDensity;
     //Map Smoothness
     public bool smoothBool;
@@ -32,10 +36,7 @@ public class cellMain : MonoBehaviour
     public int smoothAmt;
     private int smoothCnt;
     //Block References for prefabs
-    public GameObject[] blockAtlas;
-    //Truncated
-    public int refreshRate;
-    
+    public GameObject[] blockAtlas;    
 
     // Start is called before the first frame update
     void Start()
@@ -79,9 +80,38 @@ public class cellMain : MonoBehaviour
     }
 
     public void deleteBlock(int x, int y, int z, string val) {
-        Debug.Log("Deleted: [" + x + "," + y + "," + z + "," + val + "]");
+        
         removeCell(x, y, z, val);
+        deleteAsset(x, y, z);
+        updateVonNeumann(x,y,z);
+    }
+
+    public void deleteAsset(int x, int y, int z) {
         DestroyImmediate(assetMap[x, y, z]);
+        //Debug.Log("Deleted: [" + x + "," + y + "," + z + "]");
+    }
+
+    public void createBlock(int x, int y, int z, string val) {
+        AddCell(x, y, z, val);
+    }
+
+    public void updateGrass(int x, int y, int z) {
+        if (map[x, y + 1, z] == 0) {
+            removeCell(x, y, z, "dirt");
+            deleteAsset(x, y, z);
+            createBlock(x, y, z, "grass");
+            DrawBlock(x, y, z, "grass");
+            //Debug.Log("Updated: [" + x + "," + y + "," + z + ",dirt->grass]");
+
+        }
+    }
+
+    public void updateVonNeumann(int x, int y, int z) {
+        foreach (List<int> v in vonNeumann) {
+            if (map[x + v[0], y + v[1], z + v[2]] == 2) {
+                updateGrass(x + v[0], y + v[1], z + v[2]);
+            }
+        }
     }
 
     //add cell to storage

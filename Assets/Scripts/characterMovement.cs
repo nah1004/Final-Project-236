@@ -11,8 +11,6 @@ public class characterMovement : MonoBehaviour
     //players movement speed
     public float speed;
     [Range(0,10)]
-    // players jump force
-    public float jumpForce;
     // quaternion for camera rotation
     float camRotX;
     float camRotY;

@@ -304,8 +304,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cam: {fileID: 702859440}
   camHolder: {fileID: 1703536419}
-  speed: 12
-  jumpForce: 4
+  speed: 8
   lookSensitivity: 3
 --- !u!4 &212513122
 Transform:
@@ -616,9 +615,8 @@ MonoBehaviour:
   blockAtlas:
   - {fileID: 0}
   - {fileID: 3834357208316427673, guid: 74bd66712a680d24f995081c35e0ec9b, type: 3}
-  - {fileID: 786369920470274927, guid: 412dc886127147846bd65cebd8a0591e, type: 3}
+  - {fileID: 8894110989833987280, guid: 774ae6409198d9340b770b957525beaf, type: 3}
   - {fileID: 786369920470274927, guid: 5a1765b34c519aa49bd352ca81e1e860, type: 3}
-  refreshRate: 0
 --- !u!4 &1076976709
 Transform:
   m_ObjectHideFlags: 0
