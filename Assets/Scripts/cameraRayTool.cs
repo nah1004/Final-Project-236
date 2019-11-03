@@ -7,8 +7,16 @@ public class cameraRayTool : MonoBehaviour
 
     public Camera cam;
     public GameObject cursor;
+    private cellMain cellMain;
+    private blockReference blockR;
     
     private bool cursorBool;
+
+
+    public void Start()
+    {
+        cellMain = gameObject.GetComponent<cellMain>();
+    }
 
     // Updates the cursor for the user so they know where they are looking
     public void updateCursor(bool isRenderable, Vector3 pos)
@@ -28,7 +36,8 @@ public class cameraRayTool : MonoBehaviour
     //Destroy Block
     public void DestroyBlock(GameObject obj) {
         if (obj.tag == "block") {
-            DestroyImmediate(obj);
+            blockR = obj.GetComponentInParent<blockReference>();
+            cellMain.deleteBlock(blockR.getX(), blockR.getY(), blockR.getZ(), blockR.getType());
         }
     }
 
@@ -42,14 +51,14 @@ public class cameraRayTool : MonoBehaviour
             RaycastHit hit;
 
         //scan
-        if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask) && Input.GetMouseButton(2))
+        if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask) && Input.GetMouseButtonDown(2))
         {
             Debug.DrawRay(cam.transform.position, cam.transform.TransformDirection(Vector3.forward) * hit.distance, Color.magenta);
             cursorBool = true;
             updateCursor(cursorBool, hit.point);
         }
         //delete
-        else if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask) && Input.GetMouseButton(0))
+        else if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask) && Input.GetMouseButtonDown(0))
         {
             Debug.DrawRay(cam.transform.position, cam.transform.TransformDirection(Vector3.forward) * hit.distance, Color.red);
             cursorBool = true;
@@ -57,7 +66,7 @@ public class cameraRayTool : MonoBehaviour
             DestroyBlock(hit.collider.gameObject);
         }
         //place
-        else if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask) && Input.GetMouseButton(1))
+        else if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask) && Input.GetMouseButtonDown(1))
         {
             Debug.DrawRay(cam.transform.position, cam.transform.TransformDirection(Vector3.forward) * hit.distance, Color.green);
             cursorBool = true;

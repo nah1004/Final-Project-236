@@ -7,6 +7,7 @@ public class cellMain : MonoBehaviour
     //Block Atlas
     public Dictionary<string, int> atlas;
     //Block Storage
+    private GameObject[,,] assetMap;
     private Dictionary<string, List<List<int>>> blocks;
     private int[,,] map;
     private int[,,] resMap;
@@ -40,6 +41,7 @@ public class cellMain : MonoBehaviour
     void Start()
     {
         //clear old map if it exists
+        assetMap = new GameObject[mapX, mapY, mapZ];
         ResetMapData();
         InitCellOS();
         InitMap();
@@ -76,6 +78,12 @@ public class cellMain : MonoBehaviour
         GameObject.DestroyImmediate(mapHolder);
     }
 
+    public void deleteBlock(int x, int y, int z, string val) {
+        Debug.Log("Deleted: [" + x + "," + y + "," + z + "," + val + "]");
+        removeCell(x, y, z, val);
+        DestroyImmediate(assetMap[x, y, z]);
+    }
+
     //add cell to storage
     public void AddCell(int x, int y, int z, string val) {
         //update the map[x,y,z] to val
@@ -100,9 +108,9 @@ public class cellMain : MonoBehaviour
     public void removeCell(int x, int y, int z, string val) {
         map[x, y, z] = 0;
         foreach (List<int> elem in blocks[val]) {
-            if (elem[0] == x && elem[1] == y) {
-                Debug.Log(elem);
+            if (elem[0] == x && elem[1] == y && elem[2] == z) {
                 blocks[val].Remove(elem);
+                break;
             }
         }
     }
@@ -137,6 +145,7 @@ public class cellMain : MonoBehaviour
         pushTempToMap();
         NewMapHolder();
     }
+
 
     // Smoothing algorithm for forming coherent noise structures
     // Otherwise the map would look like 3 dimensional static
@@ -235,10 +244,12 @@ public class cellMain : MonoBehaviour
     }
 
     //function to generate a specific cube at a specific location
-    public void DrawTile(int x, int y, int z, string val) {
+    public void DrawBlock(int x, int y, int z, string val) {
         GameObject clone = Instantiate(blockAtlas[atlas[val]], new Vector3(x - (mapX/2), y - (mapY/2), z - (mapZ/2)), Quaternion.Euler(-90,0,0)) as GameObject;
         clone.transform.parent = mapHolder.transform;
-        
+        clone.AddComponent<blockReference>();
+        clone.GetComponent<blockReference>().setReference(x, y, z, val);
+        assetMap[x, y, z] = clone;
     }
 
     //generate cubes based on map values
@@ -247,7 +258,7 @@ public class cellMain : MonoBehaviour
         foreach (string elem in blocks.Keys) {
             if (elem != "air") {
                 foreach (List<int> listVal in blocks[elem]) {
-                    DrawTile(listVal[0], listVal[1], listVal[2], elem);
+                    DrawBlock(listVal[0], listVal[1], listVal[2], elem);
                 }
             }
         }
