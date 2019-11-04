@@ -46,7 +46,7 @@ public class cameraRayTool : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-            int layerMask = 1 << 8;
+            int layerMask = 1 << 2;
             layerMask = ~layerMask;
             RaycastHit hit;
 

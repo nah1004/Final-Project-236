@@ -10,7 +10,8 @@ public class characterMovement : MonoBehaviour
     public GameObject camHolder;
     //players movement speed
     public float speed;
-    [Range(0,10)]
+    private int clampAngle;
+
     // quaternion for camera rotation
     float camRotX;
     float camRotY;
@@ -21,6 +22,7 @@ public class characterMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        clampAngle = 90;
         //hide cursor and lock the curson in the center
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -66,11 +68,11 @@ public class characterMovement : MonoBehaviour
 
         camRotX -= Input.GetAxis("Mouse Y") * lookSensitivity;
         camRotY += Input.GetAxis("Mouse X") * lookSensitivity;
-        if (camRotX > 85) {
-            camRotX = 85;
+        if (camRotX > clampAngle) {
+            camRotX = clampAngle;
         }
-        if (camRotX < -85) {
-            camRotX = -85;
+        if (camRotX < -clampAngle) {
+            camRotX = -clampAngle;
         }
         camHolder.transform.rotation = Quaternion.Euler(0, camRotY, 0);
         cam.transform.rotation = Quaternion.Euler(camRotX, camRotY, 0);
