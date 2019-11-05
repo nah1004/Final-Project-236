@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class cellMain : MonoBehaviour
 {
+    private const int MAPLIMITCHECK = 2;
     //Block Atlas
     public Dictionary<string, int> atlas;
     //Block Storage
@@ -49,8 +50,12 @@ public class cellMain : MonoBehaviour
         InitCellOS();
         InitMap();
         FillMap();
-        for (int i = 0; i < smoothAmt; i++) {
-            smoothMap();
+        if (smoothBool)
+        {
+            for (int i = 0; i < smoothAmt; i++)
+            {
+                smoothMap();
+            }
         }
         seedGrass();
         //GenBorder();
@@ -64,13 +69,6 @@ public class cellMain : MonoBehaviour
         {
             name = "Map"
         };
-    }
-
-    //Steps the simulation one tick
-    public void nextGeneration(bool isSmooth) {
-        if (isSmooth) {
-            smoothMap();
-        }
     }
 
     // resets the local map and block list
@@ -97,9 +95,10 @@ public class cellMain : MonoBehaviour
 
     //creates a block gameojbect and updates memory
     public void createBlock(int x, int y, int z, string val) {
-        if (!(x + 2 >= mapX) && !(x - 2 <= 0) && !(y + 2 >= mapY) && !(y - 2 <= 0) && !(z + 2 >= mapZ) && !(z - 2 <= 0))
+        // check to see if map location is in-bounds
+        if (!(x + MAPLIMITCHECK >= mapX) && !(x - MAPLIMITCHECK <= 0) && !(y + MAPLIMITCHECK >= mapY) && !(y - MAPLIMITCHECK <= 0) && !(z + MAPLIMITCHECK >= mapZ) && !(z - MAPLIMITCHECK <= 0))
         {
-            if (map[x, y, z] == 0)
+            if (map[x, y, z] == atlas["air"])
             {
                 AddCell(x, y, z, val);
                 DrawBlock(x, y, z, val);
@@ -113,7 +112,7 @@ public class cellMain : MonoBehaviour
 
     // checks grass cases
     public void plantGrass(int x, int y, int z) {
-        if (map[x, y, z] == 2)
+        if (map[x, y, z] == atlas["dirt"])
         {
             if (map[x, y + 1, z] == 0)
             {
@@ -125,14 +124,14 @@ public class cellMain : MonoBehaviour
 
             }
         }
-        else if (map[x, y, z] == 3) {
-            if (map[x, y + 1, z] != 0)
+        else if (map[x, y, z] == atlas["grass"]) {
+            if (map[x, y + 1, z] != atlas["air"])
             {
                 removeCell(x, y, z, "grass");
                 deleteAsset(x, y, z);
                 AddCell(x, y, z, "dirt");
                 DrawBlock(x, y, z, "dirt");
-                Debug.Log("Updated: [" + x + "," + y + "," + z + ",grass->dirt]");
+                //Debug.Log("Updated: [" + x + "," + y + "," + z + ",grass->dirt]");
             }
         }
     }
@@ -140,7 +139,7 @@ public class cellMain : MonoBehaviour
     // upadates a adjacent neighborhood to a single block
     public void updateVonNeumann(int x, int y, int z) {
         foreach (List<int> v in vonNeumann) {
-            if (map[x + v[0], y + v[1], z + v[2]] == 2 || map[x + v[0], y + v[1], z + v[2]] == 3)
+            if (map[x + v[0], y + v[1], z + v[2]] == atlas["dirt"] || map[x + v[0], y + v[1], z + v[2]] == atlas["grass"])
             {
                 plantGrass(x + v[0], y + v[1], z + v[2]);
             }
@@ -169,7 +168,7 @@ public class cellMain : MonoBehaviour
 
     //remove cell from map and block list.. reset it to air or 0
     public void removeCell(int x, int y, int z, string val) {
-        map[x, y, z] = 0;
+        map[x, y, z] = atlas["air"];
         foreach (List<int> elem in blocks[val]) {
             if (elem[0] == x && elem[1] == y && elem[2] == z) {
                 blocks[val].Remove(elem);
@@ -188,12 +187,12 @@ public class cellMain : MonoBehaviour
                 foreach (List<int> listVal in blocks[elem])
                 {
                     // if the block above is air... make this dirt block grass
-                    if (map[listVal[0], listVal[1] + 1, listVal[2]] == 0)
+                    if (map[listVal[0], listVal[1] + 1, listVal[2]] == atlas["air"])
                     {
-                        resMap[listVal[0], listVal[1], listVal[2]] = 3;
+                        resMap[listVal[0], listVal[1], listVal[2]] = atlas["grass"];
                     }
                     else {
-                        resMap[listVal[0], listVal[1], listVal[2]] = 2;
+                        resMap[listVal[0], listVal[1], listVal[2]] = atlas["dirt"];
                     }
                 }
             }
@@ -222,7 +221,7 @@ public class cellMain : MonoBehaviour
                     // Check neighborhood for neighbors
                     foreach (List<int> elem in neighborhoods[neighborhoodStyle])
                     {
-                        if (map[x + elem[0], y + elem[1], z + elem[2]] != 0)
+                        if (map[x + elem[0], y + elem[1], z + elem[2]] != atlas["air"])
                         {
                             neighbors++;
                         }
@@ -230,11 +229,11 @@ public class cellMain : MonoBehaviour
                     //Conditionally change the block type
                     if (neighbors > smoothBias)
                     {
-                        resMap[x, y, z] = 2;
+                        resMap[x, y, z] = atlas["dirt"];
                     }
                     else
                     {
-                        resMap[x, y, z] = 0;
+                        resMap[x, y, z] = atlas["air"];
                     }
                 }
             }
@@ -253,13 +252,13 @@ public class cellMain : MonoBehaviour
                 for (int z = 0; z < mapZ - 1; z++)
                 {
                     map[x, y, z] = resMap[x, y, z];
-                    if (map[x, y, z] != 0)
+                    if (map[x, y, z] != atlas["air"])
                     {
-                        if (map[x, y, z] == 2)
+                        if (map[x, y, z] == atlas["dirt"])
                         {
                             AddCell(x, y, z, "dirt");
                         }
-                        else if (map[x, y, z] == 3) {
+                        else if (map[x, y, z] == atlas["grass"]) {
                             AddCell(x, y, z, "grass");
                         }
                     }

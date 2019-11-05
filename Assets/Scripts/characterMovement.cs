@@ -23,7 +23,7 @@ public class characterMovement : MonoBehaviour
     void Start()
     {
         clampAngle = 90;
-        //hide cursor and lock the curson in the center
+        //hide cursor and lock the curson in the center screen
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
@@ -44,36 +44,44 @@ public class characterMovement : MonoBehaviour
             //move the character forward relative to the camera container by speed per unit time
             gameObject.transform.Translate(camHolder.transform.forward * speed * Time.deltaTime);
         }
+        //press s
         else if (Input.GetKey(KeyCode.S)) {
+            // move backwards
             gameObject.transform.Translate(camHolder.transform.forward * -speed * Time.deltaTime);
         }
 
         if (Input.GetKey(KeyCode.A))
         {
+            //move left
             gameObject.transform.Translate(camHolder.transform.right * -speed * Time.deltaTime);
         }
         else if (Input.GetKey(KeyCode.D))
         {
+            // move right
             gameObject.transform.Translate(camHolder.transform.right * speed * Time.deltaTime);
         }
 
         if (Input.GetKey(KeyCode.Space))
         {
+            // move up
             gameObject.transform.Translate(camHolder.transform.up * speed * Time.deltaTime);
         }
         else if (Input.GetKey(KeyCode.LeftShift)) {
+            // move down
             gameObject.transform.Translate(camHolder.transform.up * -speed * Time.deltaTime);
         }
     
-
+        // get mouse position
         camRotX -= Input.GetAxis("Mouse Y") * lookSensitivity;
         camRotY += Input.GetAxis("Mouse X") * lookSensitivity;
+        // clamp input to look angle so it doesnt exceed reasonable angles
         if (camRotX > clampAngle) {
             camRotX = clampAngle;
         }
         if (camRotX < -clampAngle) {
             camRotX = -clampAngle;
         }
+        // rotate camera accordingly
         camHolder.transform.rotation = Quaternion.Euler(0, camRotY, 0);
         cam.transform.rotation = Quaternion.Euler(camRotX, camRotY, 0);
     }

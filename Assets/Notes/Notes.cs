@@ -1,6 +1,6 @@
 ﻿//Notes:
 /*
-
-Bevel Amount: .01f
+//blender model edge setting
+    Bevel Amount: .01f
 
 */
