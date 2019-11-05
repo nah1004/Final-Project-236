@@ -30,6 +30,8 @@ public class cellMain : MonoBehaviour
     //Map Density
     [Range(0, 100)]
     public int mapDensity;
+    [Range(.1f,.9f)]
+    public float paddingRatio;
     //Map Smoothness
     public bool smoothBool;
     public int smoothBias;
@@ -95,11 +97,17 @@ public class cellMain : MonoBehaviour
 
     //creates a block gameojbect and updates memory
     public void createBlock(int x, int y, int z, string val) {
-        if (map[x, y, z] == 0)
+        if (!(x + 2 >= mapX) && !(x - 2 <= 0) && !(y + 2 >= mapY) && !(y - 2 <= 0) && !(z + 2 >= mapZ) && !(z - 2 <= 0))
         {
-            AddCell(x, y, z, val);
-            DrawBlock(x, y, z, val);
-            updateVonNeumann(x, y, z);
+            if (map[x, y, z] == 0)
+            {
+                AddCell(x, y, z, val);
+                DrawBlock(x, y, z, val);
+                updateVonNeumann(x, y, z);
+            }
+        }
+        else {
+            Debug.Log("Out of Bounds: Reached map limit");
         }
     }
 
@@ -278,9 +286,9 @@ public class cellMain : MonoBehaviour
     //Randomly fill map with noise biased towards mapDensity
     // Essentially controls map density
     public void FillMap() {
-        for (int x = 1; x < mapX - 1; x++) {
-            for (int y = 1; y < mapY - 1; y++) {
-                for (int z = 1; z < mapZ - 1; z++)
+        for (int x = Mathf.RoundToInt(mapX * paddingRatio); x < mapX-(mapX * paddingRatio); x++) {
+            for (int y = Mathf.RoundToInt(mapY * paddingRatio); y < mapY-((mapY * paddingRatio * 2)); y++) {
+                for (int z = Mathf.RoundToInt(mapZ * paddingRatio); z < mapZ-(mapZ * paddingRatio); z++)
                 {
                     int tempRand = Random.Range(0, 100);
                     if (tempRand < mapDensity)

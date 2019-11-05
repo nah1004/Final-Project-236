@@ -618,11 +618,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborhoodStyle: 1
-  mapX: 40
-  mapY: 15
-  mapZ: 40
-  mapDensity: 48
-  smoothBool: 1
+  mapX: 50
+  mapY: 50
+  mapZ: 50
+  mapDensity: 47
+  paddingRatio: 0.2
+  smoothBool: 0
   smoothBias: 12
   smoothAmt: 7
   blockAtlas:
