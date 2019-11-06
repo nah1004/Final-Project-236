@@ -71,6 +71,9 @@ public class cameraRayTool : MonoBehaviour
             Debug.DrawRay(cam.transform.position, cam.transform.TransformDirection(Vector3.forward) * hit.distance, Color.green);
             cursorBool = true;
             updateCursor(cursorBool, hit.point);
+            //Test
+            blockReference thisRef = hit.collider.gameObject.GetComponentInParent<blockReference>();
+            cellMain.createBlock(Mathf.RoundToInt(hit.point.x + (hit.normal.x / 3) + (cellMain.mapX / 2)), Mathf.RoundToInt(hit.point.y + (hit.normal.y / 3) + (cellMain.mapY / 2)), Mathf.RoundToInt(hit.point.z + (hit.normal.z / 3) + (cellMain.mapZ / 2)), "dirt");
         }
         //looking at block
         else if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask))

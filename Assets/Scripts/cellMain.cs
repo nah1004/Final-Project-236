@@ -79,6 +79,7 @@ public class cellMain : MonoBehaviour
         GameObject.DestroyImmediate(mapHolder);
     }
 
+    // Erases Block gameobject and updates memory
     public void deleteBlock(int x, int y, int z, string val) {
         
         removeCell(x, y, z, val);
@@ -86,30 +87,54 @@ public class cellMain : MonoBehaviour
         updateVonNeumann(x,y,z);
     }
 
+    //Deletes a physical asset of xyz
     public void deleteAsset(int x, int y, int z) {
         DestroyImmediate(assetMap[x, y, z]);
         //Debug.Log("Deleted: [" + x + "," + y + "," + z + "]");
     }
 
+    //creates a block gameojbect and updates memory
     public void createBlock(int x, int y, int z, string val) {
-        AddCell(x, y, z, val);
-    }
-
-    public void updateGrass(int x, int y, int z) {
-        if (map[x, y + 1, z] == 0) {
-            removeCell(x, y, z, "dirt");
-            deleteAsset(x, y, z);
-            createBlock(x, y, z, "grass");
-            DrawBlock(x, y, z, "grass");
-            //Debug.Log("Updated: [" + x + "," + y + "," + z + ",dirt->grass]");
-
+        if (map[x, y, z] == 0)
+        {
+            AddCell(x, y, z, val);
+            DrawBlock(x, y, z, val);
+            updateVonNeumann(x, y, z);
         }
     }
 
+    // checks grass cases
+    public void plantGrass(int x, int y, int z) {
+        if (map[x, y, z] == 2)
+        {
+            if (map[x, y + 1, z] == 0)
+            {
+                removeCell(x, y, z, "dirt");
+                deleteAsset(x, y, z);
+                AddCell(x, y, z, "grass");
+                DrawBlock(x, y, z, "grass");
+                //Debug.Log("Updated: [" + x + "," + y + "," + z + ",dirt->grass]");
+
+            }
+        }
+        else if (map[x, y, z] == 3) {
+            if (map[x, y + 1, z] != 0)
+            {
+                removeCell(x, y, z, "grass");
+                deleteAsset(x, y, z);
+                AddCell(x, y, z, "dirt");
+                DrawBlock(x, y, z, "dirt");
+                Debug.Log("Updated: [" + x + "," + y + "," + z + ",grass->dirt]");
+            }
+        }
+    }
+
+    // upadates a adjacent neighborhood to a single block
     public void updateVonNeumann(int x, int y, int z) {
         foreach (List<int> v in vonNeumann) {
-            if (map[x + v[0], y + v[1], z + v[2]] == 2) {
-                updateGrass(x + v[0], y + v[1], z + v[2]);
+            if (map[x + v[0], y + v[1], z + v[2]] == 2 || map[x + v[0], y + v[1], z + v[2]] == 3)
+            {
+                plantGrass(x + v[0], y + v[1], z + v[2]);
             }
         }
     }
@@ -377,6 +402,10 @@ public class cellMain : MonoBehaviour
             //back
             new List<int>{
                 0,0,-1
+            },
+            //Center
+            new List<int>{
+                0,0,0
             }
         };
         moore = new List<List<int>>

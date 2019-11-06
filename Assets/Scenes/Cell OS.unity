@@ -618,9 +618,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborhoodStyle: 1
-  mapX: 30
-  mapY: 20
-  mapZ: 30
+  mapX: 40
+  mapY: 15
+  mapZ: 40
   mapDensity: 48
   smoothBool: 1
   smoothBias: 12
