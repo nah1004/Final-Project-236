@@ -5,6 +5,8 @@ using UnityEngine;
 public class cellMain : MonoBehaviour
 {
     private const int MAPLIMITCHECK = 2;
+    private const int PLACEINDEXMAX = 5;
+    private const int PLACEINDEXMIN = 3;
     //Block Atlas
     public Dictionary<string, int> atlas;
     //Block Storage
@@ -38,12 +40,14 @@ public class cellMain : MonoBehaviour
     public int smoothBias;
     public int smoothAmt;
     private int smoothCnt;
+    public int placeIndex;
     //Block References for prefabs
     public GameObject[] blockAtlas;    
 
     // Start is called before the first frame update
     void Start()
     {
+        placeIndex = PLACEINDEXMIN;
         //clear old map if it exists
         assetMap = new GameObject[mapX, mapY, mapZ];
         ResetMapData();
@@ -71,6 +75,34 @@ public class cellMain : MonoBehaviour
         };
     }
 
+    // used for setting place index. Place the correct block that is selected
+    public void updatePlaceIndex(string scrollDirection)
+    {
+        if (scrollDirection == "up")
+        {
+            if (placeIndex == PLACEINDEXMAX)
+            {
+                placeIndex = PLACEINDEXMIN;
+            }
+            else {
+                placeIndex++;
+            }
+        }
+        else if(scrollDirection == "down")
+        {
+            if (placeIndex == PLACEINDEXMIN)
+            {
+                placeIndex = PLACEINDEXMAX;
+            }
+            else
+            {
+                placeIndex--;
+            }
+        }
+        //Debug.Log(placeIndex);
+    }
+
+
     // resets the local map and block list
     public void ResetMapData() {
         blocks = null;
@@ -93,15 +125,38 @@ public class cellMain : MonoBehaviour
         //Debug.Log("Deleted: [" + x + "," + y + "," + z + "]");
     }
 
+    public string getAtlasKey(int val) {
+        string res = null;
+        switch (val) {
+            case 2:
+                res = "dirt";
+                break;
+            case 3:
+                res = "grass";
+                break;
+            case 4:
+                res = "wood";
+                break;
+            case 5:
+                res = "stone";
+                break;
+            default:
+                break;
+        }
+        
+
+        return res;
+    }
+
     //creates a block gameojbect and updates memory
-    public void createBlock(int x, int y, int z, string val) {
+    public void createBlock(int x, int y, int z) {
         // check to see if map location is in-bounds
         if (!(x + MAPLIMITCHECK >= mapX) && !(x - MAPLIMITCHECK <= 0) && !(y + MAPLIMITCHECK >= mapY) && !(y - MAPLIMITCHECK <= 0) && !(z + MAPLIMITCHECK >= mapZ) && !(z - MAPLIMITCHECK <= 0))
         {
             if (map[x, y, z] == atlas["air"])
             {
-                AddCell(x, y, z, val);
-                DrawBlock(x, y, z, val);
+                AddCell(x, y, z, getAtlasKey(placeIndex));
+                DrawBlock(x, y, z, getAtlasKey(placeIndex));
                 updateVonNeumann(x, y, z);
             }
         }
@@ -132,6 +187,139 @@ public class cellMain : MonoBehaviour
                 AddCell(x, y, z, "dirt");
                 DrawBlock(x, y, z, "dirt");
                 //Debug.Log("Updated: [" + x + "," + y + "," + z + ",grass->dirt]");
+            }
+        }
+    }
+
+    //Tree Generation algorithm
+    public void growTree() {
+
+    }
+
+    public bool isStuck(int x, int y, int z) {
+        bool isStuck = false;
+        if (map[x+1, y, z] != atlas["air"] && map[x-1, y, z] != atlas["air"] && map[x, y+1, z] != atlas["air"] && map[x, y-1, z] != atlas["air"] && map[x, y, z+1] != atlas["air"] && map[x, y, z-1] != atlas["air"]) {
+            isStuck = false;
+        }
+        return isStuck;
+    }
+
+    public void perlinWorm(int x, int y, int z, int wormLenth) {
+
+        int wormCount = 0;
+        bool hasFoundNextMove = false;
+        int currentX = x;
+        int currentY = y;
+        int currentZ = z;
+
+        //Creating inital node
+        AddCell(x, y, z, "vine");
+        DrawBlock(x, y, z, "vine");
+        wormCount++;
+
+        while (wormCount < wormLenth) {
+            while (!hasFoundNextMove)
+            {
+                int direction = Random.Range(0, 5);
+
+                switch (direction) {
+                    // Left
+                    case 0:
+                        if (map[x+1, y, z] == atlas["air"]) {
+                            hasFoundNextMove = true;
+                            AddCell(x+1, y, z, "vine");
+                            DrawBlock(x+1, y, z, "vine");
+                            currentX++;
+                        }
+                        break;
+                    // Right
+                    case 1:
+                        if (map[x-1, y, z] == atlas["air"])
+                        {
+                            hasFoundNextMove = true;
+                            AddCell(x-1, y, z, "vine");
+                            DrawBlock(x-1, y, z, "vine");
+                            currentX--;
+                        }
+                        break;
+                    // Up
+                    case 2:
+                        if (map[x, y+1, z] == atlas["air"])
+                        {
+                            hasFoundNextMove = true;
+                            AddCell(x, y+1, z, "vine");
+                            DrawBlock(x, y+1, z, "vine");
+                            currentY++;
+                        }
+                        break;
+                    // Down
+                    case 3:
+                        if (map[x, y-1, z] == atlas["air"])
+                        {
+                            hasFoundNextMove = true;
+                            AddCell(x, y-1, z, "vine");
+                            DrawBlock(x, y-1, z, "vine");
+                            currentY--;
+                        }
+                        break;
+                    // Forward
+                    case 4:
+                        if (map[x, y, z+1] == atlas["air"])
+                        {
+                            hasFoundNextMove = true;
+                            AddCell(x, y, z+1, "vine");
+                            DrawBlock(x, y, z+1, "vine");
+                            currentZ++;
+                        }
+                        break;
+                    // Backwards
+                    case 5:
+                        if (map[x, y, z-1] == atlas["air"])
+                        {
+                            hasFoundNextMove = true;
+                            AddCell(x, y, z-1, "vine");
+                            DrawBlock(x, y, z-1, "vine");
+                            currentZ--;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    // functino to check the water
+    public void flowWater(int x, int y, int z) {
+        if (map[x, y, z] == atlas["flowingWater"])
+        {
+            if (map[x, y - 1, z] == atlas["air"]){
+                AddCell(x, y, z, "flowingWater");
+                DrawBlock(x, y, z, "flowingWater");
+            }
+            else {
+                removeCell(x, y, z, "flowingWater");
+                deleteAsset(x, y, z);
+                AddCell(x, y, z, "sittingWater");
+                DrawBlock(x, y, z, "sittingWater");
+            }
+        }
+        else if (map[x, y, z] == atlas["sittingWater"]) {
+            if (map[x+1, y, z] == atlas["air"]) {
+                AddCell(x, y, z, "flowingWater");
+                DrawBlock(x, y, z, "flowingWater");
+            }
+            if (map[x-1, y, z] == atlas["air"]) {
+                AddCell(x, y, z, "flowingWater");
+                DrawBlock(x, y, z, "flowingWater");
+            }
+            if (map[x, y, z+1] == atlas["air"]) {
+                AddCell(x, y, z, "flowingWater");
+                DrawBlock(x, y, z, "flowingWater");
+            }
+            if (map[x, y, z-1] == atlas["air"]) {
+                AddCell(x, y, z, "flowingWater");
+                DrawBlock(x, y, z, "flowingWater");
             }
         }
     }
@@ -349,7 +537,13 @@ public class cellMain : MonoBehaviour
             { "air", 0 },
             { "border", 1 },
             { "dirt", 2},
-            { "grass", 3 }
+            { "grass", 3 },
+            { "wood", 4},
+            { "stone", 5},
+            { "flowingWater", 6},
+            { "sittingWater", 7},
+            { "leaf", 8},
+            { "vine", 9}
         };
     }
 

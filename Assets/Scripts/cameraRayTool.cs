@@ -71,7 +71,7 @@ public class cameraRayTool : MonoBehaviour
                 //TODO
         }
         //delete
-        else if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask) && Input.GetMouseButtonDown(RIGHTCLICK))
+        else if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask) && Input.GetMouseButtonDown(LEFTCLICK))
         {
             Debug.DrawRay(cam.transform.position, cam.transform.TransformDirection(Vector3.forward) * hit.distance, Color.red);
             cursorBool = true;
@@ -87,7 +87,7 @@ public class cameraRayTool : MonoBehaviour
             updateCursor(cursorBool, hit.point);
             //Add a block
             blockReference thisRef = hit.collider.gameObject.GetComponentInParent<blockReference>();
-            cellMain.createBlock(Mathf.RoundToInt(hit.point.x + (hit.normal.x / SCANNORMALADJUSTMENT) + (cellMain.mapX / 2)), Mathf.RoundToInt(hit.point.y + (hit.normal.y / SCANNORMALADJUSTMENT) + (cellMain.mapY / 2)), Mathf.RoundToInt(hit.point.z + (hit.normal.z / SCANNORMALADJUSTMENT) + (cellMain.mapZ / 2)), "dirt");
+            cellMain.createBlock(Mathf.RoundToInt(hit.point.x + (hit.normal.x / SCANNORMALADJUSTMENT) + (cellMain.mapX / 2)), Mathf.RoundToInt(hit.point.y + (hit.normal.y / SCANNORMALADJUSTMENT) + (cellMain.mapY / 2)), Mathf.RoundToInt(hit.point.z + (hit.normal.z / SCANNORMALADJUSTMENT) + (cellMain.mapZ / 2)));
         }
         //looking at block so render
         else if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask))
@@ -108,5 +108,3 @@ public class cameraRayTool : MonoBehaviour
        
     }
 }
-
-
