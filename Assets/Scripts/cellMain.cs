@@ -5,7 +5,7 @@ using UnityEngine;
 public class cellMain : MonoBehaviour
 {
     private const int MAPLIMITCHECK = 2;
-    private const int PLACEINDEXMAX = 5;
+    private const int PLACEINDEXMAX = 11;
     private const int PLACEINDEXMIN = 3;
     //Block Atlas
     public Dictionary<string, int> atlas;
@@ -22,6 +22,7 @@ public class cellMain : MonoBehaviour
     private List<List<List<int>>> neighborhoods;
     private List<List<int>> vonNeumann;
     private List<List<int>> moore;
+    private List<List<int>> treeTop;
     //Public map Variables are so they are visible in the editor so i can tweak generation
     //Map Size
     [Range(10,60)]
@@ -64,6 +65,9 @@ public class cellMain : MonoBehaviour
         seedGrass();
         //GenBorder();
         VisMap();
+
+        InvokeRepeating("flowWater", 0.5f, 0.5f);
+        InvokeRepeating("perlinWorm", 0.0f, 0.3f);
     }
 
     //Creates a container for instantianted gameobject clones
@@ -140,6 +144,24 @@ public class cellMain : MonoBehaviour
             case 5:
                 res = "stone";
                 break;
+            case 6:
+                res = "flowingWater";
+                break;
+            case 7:
+                res = "sittingWater";
+                break;
+            case 8:
+                res = "leaf";
+                break;
+            case 9:
+                res = "vine";
+                break;
+            case 10:
+                res = "wormHead";
+                break;
+            case 11:
+                res = "seed";
+                break;
             default:
                 break;
         }
@@ -148,10 +170,19 @@ public class cellMain : MonoBehaviour
         return res;
     }
 
+    public bool isInBounds(int x, int y, int z) {
+        bool inBounds = false;
+        if (!(x + MAPLIMITCHECK >= mapX) && !(x - MAPLIMITCHECK <= 0) && !(y + MAPLIMITCHECK >= mapY) && !(y - MAPLIMITCHECK <= 0) && !(z + MAPLIMITCHECK >= mapZ) && !(z - MAPLIMITCHECK <= 0))
+        {
+            inBounds = true;
+        }
+        return inBounds;
+    }
+
     //creates a block gameojbect and updates memory
     public void createBlock(int x, int y, int z) {
         // check to see if map location is in-bounds
-        if (!(x + MAPLIMITCHECK >= mapX) && !(x - MAPLIMITCHECK <= 0) && !(y + MAPLIMITCHECK >= mapY) && !(y - MAPLIMITCHECK <= 0) && !(z + MAPLIMITCHECK >= mapZ) && !(z - MAPLIMITCHECK <= 0))
+        if (isInBounds(x,y,z))
         {
             if (map[x, y, z] == atlas["air"])
             {
@@ -204,123 +235,280 @@ public class cellMain : MonoBehaviour
         return isStuck;
     }
 
-    public void perlinWorm(int x, int y, int z, int wormLenth) {
+    public void perlinWorm() {
+        List<List<int>> tempvineAdd = new List<List<int>>();
+        List<List<int>> tempheadAdd = new List<List<int>>();
+        List<List<int>> tempheadRem = new List<List<int>>(); 
 
-        int wormCount = 0;
-        bool hasFoundNextMove = false;
-        int currentX = x;
-        int currentY = y;
-        int currentZ = z;
+        foreach (List<int> elem in blocks["wormHead"])
+        {
+            bool hasFoundNextMove = false;
+            int x = elem[0];
+            int y = elem[1];
+            int z = elem[2];
 
-        //Creating inital node
-        AddCell(x, y, z, "vine");
-        DrawBlock(x, y, z, "vine");
-        wormCount++;
+            int count = 0;
 
-        while (wormCount < wormLenth) {
-            while (!hasFoundNextMove)
+            if (isInBounds(x + 1, y +1, z +1) && isInBounds(x - 1, y - 1, z - 1))
             {
-                int direction = Random.Range(0, 5);
+                while (!hasFoundNextMove)
+                {
+                    count++;
+                    if (count == 6) {
+                        hasFoundNextMove = true;
+                        break;
+                    }
 
-                switch (direction) {
-                    // Left
-                    case 0:
-                        if (map[x+1, y, z] == atlas["air"]) {
-                            hasFoundNextMove = true;
-                            AddCell(x+1, y, z, "vine");
-                            DrawBlock(x+1, y, z, "vine");
-                            currentX++;
-                        }
-                        break;
-                    // Right
-                    case 1:
-                        if (map[x-1, y, z] == atlas["air"])
+                    //current head pos
+                    List<int> el = new List<int>();
+                    el.Add(x);
+                    el.Add(y);
+                    el.Add(z);
+
+                    if (isStuck(x, y, z))
+                    {
+                        tempheadRem.Add(el);
+                        tempvineAdd.Add(el);
+                        hasFoundNextMove = true;
+                    }
+                    else
+                    {
+
+                        int direction = Random.Range(0, 6);
+
+                        switch (direction)
                         {
-                            hasFoundNextMove = true;
-                            AddCell(x-1, y, z, "vine");
-                            DrawBlock(x-1, y, z, "vine");
-                            currentX--;
+                            // Left
+                            case 0:
+                                if (map[x + 1, y, z] == atlas["air"])
+                                {
+                                    //relative pos to head
+                                    List<int> le = new List<int>();
+                                    le.Add(x + 1);
+                                    le.Add(y);
+                                    le.Add(z);
+                                    hasFoundNextMove = true;
+                                    tempheadRem.Add(el);
+                                    tempvineAdd.Add(el);
+                                    tempheadAdd.Add(le);
+                                }
+                                break;
+                            // Right
+                            case 1:
+                                if (map[x - 1, y, z] == atlas["air"])
+                                {
+                                    //relative pos to head
+                                    List<int> le = new List<int>();
+                                    le.Add(x - 1);
+                                    le.Add(y);
+                                    le.Add(z);
+                                    hasFoundNextMove = true;
+                                    tempheadRem.Add(el);
+                                    tempvineAdd.Add(el);
+                                    tempheadAdd.Add(le);
+                                }
+                                break;
+                            // up
+                            case 2:
+                                if (map[x, y + 1, z] == atlas["air"])
+                                {
+                                    //relative pos to head
+                                    List<int> le = new List<int>();
+                                    le.Add(x);
+                                    le.Add(y + 1);
+                                    le.Add(z);
+                                    hasFoundNextMove = true;
+                                    tempheadRem.Add(el);
+                                    tempvineAdd.Add(el);
+                                    tempheadAdd.Add(le);
+                                }
+                                break;
+                            /*
+                            // Down
+                            case 3:
+                                if (map[x, y - 1, z] == atlas["air"])
+                                {
+                                    //relative pos to head
+                                    List<int> le = new List<int>();
+                                    le.Add(x);
+                                    le.Add(y - 1);
+                                    le.Add(z);
+                                    hasFoundNextMove = true;
+                                    tempheadRem.Add(el);
+                                    tempvineAdd.Add(el);
+                                    tempheadAdd.Add(le);
+                                }
+                                break;
+                                */
+                            // Forward
+                            case 4:
+                                if (map[x, y, z + 1] == atlas["air"])
+                                {
+                                    //relative pos to head
+                                    List<int> le = new List<int>();
+                                    le.Add(x);
+                                    le.Add(y);
+                                    le.Add(z + 1);
+                                    hasFoundNextMove = true;
+                                    tempheadRem.Add(el);
+                                    tempvineAdd.Add(el);
+                                    tempheadAdd.Add(le);
+                                }
+                                break;
+                            // Backwards
+                            case 5:
+                                if (map[x, y, z - 1] == atlas["air"])
+                                {
+                                    //relative pos to head
+                                    List<int> le = new List<int>();
+                                    le.Add(x);
+                                    le.Add(y);
+                                    le.Add(z - 1);
+                                    hasFoundNextMove = true;
+                                    tempheadRem.Add(el);
+                                    tempvineAdd.Add(el);
+                                    tempheadAdd.Add(le);
+                                }
+                                break;
+                            default:
+                                break;
                         }
-                        break;
-                    // Up
-                    case 2:
-                        if (map[x, y+1, z] == atlas["air"])
-                        {
-                            hasFoundNextMove = true;
-                            AddCell(x, y+1, z, "vine");
-                            DrawBlock(x, y+1, z, "vine");
-                            currentY++;
-                        }
-                        break;
-                    // Down
-                    case 3:
-                        if (map[x, y-1, z] == atlas["air"])
-                        {
-                            hasFoundNextMove = true;
-                            AddCell(x, y-1, z, "vine");
-                            DrawBlock(x, y-1, z, "vine");
-                            currentY--;
-                        }
-                        break;
-                    // Forward
-                    case 4:
-                        if (map[x, y, z+1] == atlas["air"])
-                        {
-                            hasFoundNextMove = true;
-                            AddCell(x, y, z+1, "vine");
-                            DrawBlock(x, y, z+1, "vine");
-                            currentZ++;
-                        }
-                        break;
-                    // Backwards
-                    case 5:
-                        if (map[x, y, z-1] == atlas["air"])
-                        {
-                            hasFoundNextMove = true;
-                            AddCell(x, y, z-1, "vine");
-                            DrawBlock(x, y, z-1, "vine");
-                            currentZ--;
-                        }
-                        break;
-                    default:
-                        break;
+                    }
                 }
             }
+        }
+        
+        foreach (List<int> elem in tempheadRem)
+        {
+            removeCell(elem[0], elem[1], elem[2], "wormHead");
+            deleteAsset(elem[0], elem[1], elem[2]);
+        }
+        foreach (List<int> elem in tempvineAdd)
+        {
+            AddCell(elem[0], elem[1], elem[2], "vine");
+            DrawBlock(elem[0], elem[1], elem[2], "vine");
+        }
+        foreach (List<int> elem in tempheadAdd)
+        {
+            AddCell(elem[0], elem[1], elem[2], "wormHead");
+            DrawBlock(elem[0], elem[1], elem[2], "wormHead");
         }
     }
 
     // functino to check the water
-    public void flowWater(int x, int y, int z) {
-        if (map[x, y, z] == atlas["flowingWater"])
-        {
-            if (map[x, y - 1, z] == atlas["air"]){
-                AddCell(x, y, z, "flowingWater");
-                DrawBlock(x, y, z, "flowingWater");
-            }
-            else {
-                removeCell(x, y, z, "flowingWater");
-                deleteAsset(x, y, z);
-                AddCell(x, y, z, "sittingWater");
-                DrawBlock(x, y, z, "sittingWater");
+    public void flowWater() {
+        List<List<int>> tempflowAdd = new List<List<int>>();
+        List<List<int>> tempsitAdd = new List<List<int>>();
+        List<List<int>> tempflowRem = new List<List<int>>();
+        List<List<int>> tempsitRem = new List<List<int>>();
+        foreach (List<int> elem in blocks["flowingWater"]) {
+            int x = elem[0];
+            int y = elem[1];
+            int z = elem[2];
+            if (isInBounds(x, y, z))
+            {
+                if (map[x, y - 1, z] == atlas["air"])
+                {
+                    List<int> el = new List<int>();
+                    el.Add(x);
+                    el.Add(y - 1);
+                    el.Add(z);
+                    tempflowAdd.Add(el);
+                    map[x, y - 1, z] = atlas["flowingWater"];
+                }
+                else if (map[x, y - 1, z] == atlas["flowingWater"] || map[x, y - 1, z] == atlas["sittingWater"])
+                {
+
+                }
+                else
+                {
+                    List<int> el = new List<int>();
+                    el.Add(x);
+                    el.Add(y);
+                    el.Add(z);
+                    tempflowRem.Add(el);
+                    tempsitAdd.Add(el);
+                    map[x, y - 1, z] = atlas["sittingWater"];
+                }
             }
         }
-        else if (map[x, y, z] == atlas["sittingWater"]) {
-            if (map[x+1, y, z] == atlas["air"]) {
-                AddCell(x, y, z, "flowingWater");
-                DrawBlock(x, y, z, "flowingWater");
+       foreach(List<int> elem in blocks["sittingWater"]) {
+            int x = elem[0];
+            int y = elem[1];
+            int z = elem[2];
+            if (isInBounds(x, y, z))
+            {   if (map[x, y - 1, z] == atlas["air"])
+                {
+                    List<int> el = new List<int>();
+                    el.Add(x + 1);
+                    el.Add(y);
+                    el.Add(z);
+                    tempsitRem.Add(el);
+                    tempflowAdd.Add(el);
+                    map[x, y - 1, z] = atlas["flowingWater"];
+                    map[x, y, z] = atlas["sittingWater"];
+
+                }
+                else
+                {
+                    if (map[x + 1, y, z] == atlas["air"])
+                    {
+                        List<int> el = new List<int>();
+                        el.Add(x + 1);
+                        el.Add(y);
+                        el.Add(z);
+                        tempflowAdd.Add(el);
+                        map[x+1, y, z] = atlas["flowingWater"];
+                    }
+                    if (map[x - 1, y, z] == atlas["air"])
+                    {
+                        List<int> el = new List<int>();
+                        el.Add(x - 1);
+                        el.Add(y);
+                        el.Add(z);
+                        tempflowAdd.Add(el);
+                        map[x-1, y, z] = atlas["flowingWater"];
+                    }
+                    if (map[x, y, z + 1] == atlas["air"])
+                    {
+                        List<int> el = new List<int>();
+                        el.Add(x);
+                        el.Add(y);
+                        el.Add(z + 1);
+                        tempflowAdd.Add(el);
+                        map[x, y, z+1] = atlas["flowingWater"];
+                    }
+                    if (map[x, y, z - 1] == atlas["air"])
+                    {
+                        List<int> el = new List<int>();
+                        el.Add(x);
+                        el.Add(y);
+                        el.Add(z - 1);
+                        tempflowAdd.Add(el);
+                        map[x, y, z - 1] = atlas["flowingWater"];
+                    }
+                }
             }
-            if (map[x-1, y, z] == atlas["air"]) {
-                AddCell(x, y, z, "flowingWater");
-                DrawBlock(x, y, z, "flowingWater");
-            }
-            if (map[x, y, z+1] == atlas["air"]) {
-                AddCell(x, y, z, "flowingWater");
-                DrawBlock(x, y, z, "flowingWater");
-            }
-            if (map[x, y, z-1] == atlas["air"]) {
-                AddCell(x, y, z, "flowingWater");
-                DrawBlock(x, y, z, "flowingWater");
-            }
+       }
+        foreach (List<int> elem in tempflowRem)
+        {
+            removeCell(elem[0], elem[1], elem[2], "flowingWater");
+            deleteAsset(elem[0], elem[1], elem[2]);
+        }
+        foreach (List<int> elem in tempsitRem)
+        {
+            removeCell(elem[0], elem[1], elem[2], "sittingWater");
+            deleteAsset(elem[0], elem[1], elem[2]);
+        }
+        foreach (List<int> elem in tempflowAdd)
+        {
+            AddCell(elem[0], elem[1], elem[2], "flowingWater");
+            DrawBlock(elem[0], elem[1], elem[2], "flowingWater");
+        }
+        foreach (List<int> elem in tempsitAdd)
+        {
+            AddCell(elem[0], elem[1], elem[2], "sittingWater");
+            DrawBlock(elem[0], elem[1], elem[2], "sittingWater");
         }
     }
 
@@ -474,7 +662,7 @@ public class cellMain : MonoBehaviour
     // Essentially controls map density
     public void FillMap() {
         for (int x = Mathf.RoundToInt(mapX * paddingRatio); x < mapX-(mapX * paddingRatio); x++) {
-            for (int y = Mathf.RoundToInt(mapY * paddingRatio); y < mapY-((mapY * paddingRatio * 2)); y++) {
+            for (int y = 2; y < mapY-((mapY * paddingRatio * 3.0f)); y++) {
                 for (int z = Mathf.RoundToInt(mapZ * paddingRatio); z < mapZ-(mapZ * paddingRatio); z++)
                 {
                     int tempRand = Random.Range(0, 100);
@@ -543,7 +731,9 @@ public class cellMain : MonoBehaviour
             { "flowingWater", 6},
             { "sittingWater", 7},
             { "leaf", 8},
-            { "vine", 9}
+            { "vine", 9},
+            { "wormHead", 10},
+            { "seed", 11}
         };
     }
 
@@ -715,6 +905,61 @@ public class cellMain : MonoBehaviour
             new List<int>{
                 1,1,1
             },
+        };
+        treeTop = new List<List<int>>
+        {
+            //left back
+            new List<int>{
+                -1,0,-1
+            },
+            //left 
+            new List<int>{
+                -1,0,0
+            },
+            //left forward
+            new List<int>{
+                -1,0,1
+            },
+            //back
+            new List<int>{
+                0,0,-1
+            },
+            //forward
+            new List<int>{
+                0,0,1
+            }, 
+            //right back
+            new List<int>{
+                1,0,-1
+            },
+            // right 
+            new List<int>{
+                1,0,0
+            },
+            //right  forward
+            new List<int>{
+                1,0,1
+            },
+            // left up
+            new List<int>{
+                -1,1,0
+            },
+            //up back
+            new List<int>{
+                0,1,-1
+            },
+            //up 
+            new List<int>{
+                0,1,0
+            },
+            //up forward
+            new List<int>{
+                0,1,1
+            },
+            // right up
+            new List<int>{
+                1,1,0
+            }
         };
         neighborhoods = new List<List<List<int>>> {
             vonNeumann,
