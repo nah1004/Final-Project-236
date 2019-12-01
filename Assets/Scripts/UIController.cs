@@ -55,5 +55,10 @@ public class UIController : MonoBehaviour
             txt.text = "Vine Head";
             img.texture = textures[10];
         }
+        else if (cellMain.placeIndex == 11)
+        {
+            txt.text = "Seed";
+            img.texture = textures[11];
+        }
     }
 }

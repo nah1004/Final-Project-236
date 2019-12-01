@@ -34,6 +34,9 @@ public class cellMain : MonoBehaviour
     //Map Density
     [Range(0, 100)]
     public int mapDensity;
+    //Tree Density
+    [Range(1, 20)]
+    public int treeCount;
     [Range(.1f,.9f)]
     public float paddingRatio;
     //Map Smoothness
@@ -42,8 +45,13 @@ public class cellMain : MonoBehaviour
     public int smoothAmt;
     private int smoothCnt;
     public int placeIndex;
+    private int trees;
     //Block References for prefabs
-    public GameObject[] blockAtlas;    
+    public GameObject[] blockAtlas;
+    public GameObject[] grassAccent;
+    [Range(0,100)]
+    public int grassAccentPercentage;
+
 
     // Start is called before the first frame update
     void Start()
@@ -65,9 +73,27 @@ public class cellMain : MonoBehaviour
         seedGrass();
         //GenBorder();
         VisMap();
+        InvokeRepeating("placeSeed", 1.0f, 3.0f);
+        InvokeRepeating("flowWater", 0.5f, 0.2f);
+        InvokeRepeating("perlinWorm", 0.0f, 0.1f);
+        InvokeRepeating("growTree", 1.0f, 5.0f);
+    }
 
-        InvokeRepeating("flowWater", 0.5f, 0.5f);
-        InvokeRepeating("perlinWorm", 0.0f, 0.3f);
+    //Spread initial seeds
+    public void placeSeed() {
+        if(trees < treeCount) { 
+            int xRand = Random.Range(Mathf.RoundToInt(mapX *paddingRatio), Mathf.RoundToInt(mapX - (mapX * paddingRatio)));
+            int zRand = Random.Range(Mathf.RoundToInt(mapZ * paddingRatio), Mathf.RoundToInt(mapZ - (mapZ * paddingRatio)));
+            for (int y = 3; y < mapY / 2; y++) {
+                if (map[xRand, y, zRand] == atlas["grass"] && map[xRand,y+1,zRand] == atlas["air"]) {
+                    trees++;
+                    AddCell(xRand, y+1, zRand, "seed");
+                    DrawBlock(xRand, y+1, zRand, "seed");
+                    y = mapY / 2 + 1;
+                    updateVonNeumann(xRand, y, zRand);
+                }
+            }
+        }
     }
 
     //Creates a container for instantianted gameobject clones
@@ -129,6 +155,7 @@ public class cellMain : MonoBehaviour
         //Debug.Log("Deleted: [" + x + "," + y + "," + z + "]");
     }
 
+    // For referencing string val based on atlas index
     public string getAtlasKey(int val) {
         string res = null;
         switch (val) {
@@ -165,11 +192,10 @@ public class cellMain : MonoBehaviour
             default:
                 break;
         }
-        
-
         return res;
     }
 
+    // Checks to determine whether block being investigated is within array bounds
     public bool isInBounds(int x, int y, int z) {
         bool inBounds = false;
         if (!(x + MAPLIMITCHECK >= mapX) && !(x - MAPLIMITCHECK <= 0) && !(y + MAPLIMITCHECK >= mapY) && !(y - MAPLIMITCHECK <= 0) && !(z + MAPLIMITCHECK >= mapZ) && !(z - MAPLIMITCHECK <= 0))
@@ -207,7 +233,6 @@ public class cellMain : MonoBehaviour
                 AddCell(x, y, z, "grass");
                 DrawBlock(x, y, z, "grass");
                 //Debug.Log("Updated: [" + x + "," + y + "," + z + ",dirt->grass]");
-
             }
         }
         else if (map[x, y, z] == atlas["grass"]) {
@@ -223,13 +248,77 @@ public class cellMain : MonoBehaviour
     }
 
     //Tree Generation algorithm
-    public void growTree() {
+    public void growTree()
+    {
+        List<List<int>> tempseedRem = new List<List<int>>();
+        List<List<int>> tempwoodAdd = new List<List<int>>();
+        List<List<int>> templeafAdd = new List<List<int>>();
+        List<List<int>> tempvineAdd = new List<List<int>>();
 
+        if (blocks["seed"].Count > 0)
+        {
+            List<int> elem = blocks["seed"][0];
+
+            bool spawned = true;
+            int x = elem[0];
+            int y = elem[1];
+            int z = elem[2];
+
+            //remove seed
+            removeCell(elem[0], elem[1], elem[2], "seed");
+            deleteAsset(elem[0], elem[1], elem[2]);
+
+            //Check block availablility
+            if (isInBounds(x + 2, y + 5, z + 2) && isInBounds(x - 2, y + 5, z - 2))
+            {
+                foreach (List<int> leaf in treeTop)
+                {
+                    if (map[x + leaf[0], y + 3 + leaf[1], z + leaf[2]] != atlas["air"])
+                    {
+                        spawned = false;
+                    }
+                }
+                if (map[x, y + 3, z] == atlas["air"] && map[x, y + 2, z] == atlas["air"] && map[x, y + 1, z] == atlas["air"] && spawned == true)
+                {
+                    // if they are available
+                    if (spawned)
+                    {
+                        //gen stalk
+                        for (int i = 0; i < 4; i++)
+                        {
+                            AddCell(elem[0], elem[1] + i, elem[2], "wood");
+                            DrawBlock(elem[0], elem[1] + i, elem[2], "wood");
+                        }
+                        // gen leaves
+                        foreach (List<int> leaf in treeTop)
+                        {
+                            AddCell(elem[0] + leaf[0], elem[1] + leaf[1] + 3, elem[2] + leaf[2], "leaf");
+                            DrawBlock(elem[0] + leaf[0], elem[1] + leaf[1] + 3, elem[2] + leaf[2], "leaf");
+                        }
+                    }
+                    else
+                    {
+                        spawned = false;
+                    }
+                }
+                else
+                {
+                    spawned = false;
+                }
+            }
+
+            if (!spawned)
+            {
+                //create vine
+                AddCell(elem[0], elem[1], elem[2], "wormHead");
+                DrawBlock(elem[0], elem[1], elem[2], "wormHead");
+            }
+        }
     }
 
     public bool isStuck(int x, int y, int z) {
         bool isStuck = false;
-        if (map[x+1, y, z] != atlas["air"] && map[x-1, y, z] != atlas["air"] && map[x, y+1, z] != atlas["air"] && map[x, y-1, z] != atlas["air"] && map[x, y, z+1] != atlas["air"] && map[x, y, z-1] != atlas["air"]) {
+        if (map[x + 1, y, z] != atlas["air"] && map[x - 1, y, z] != atlas["air"] && map[x, y + 1, z] != atlas["air"] && map[x, y - 1, z] != atlas["air"] && map[x, y, z + 1] != atlas["air"] && map[x, y, z - 1] != atlas["air"]) {
             isStuck = false;
         }
         return isStuck;
@@ -249,7 +338,7 @@ public class cellMain : MonoBehaviour
 
             int count = 0;
 
-            if (isInBounds(x + 1, y +1, z +1) && isInBounds(x - 1, y - 1, z - 1))
+            if (isInBounds(x + 1, y + 1, z + 1) && isInBounds(x - 1, y - 1, z - 1))
             {
                 while (!hasFoundNextMove)
                 {
@@ -377,7 +466,6 @@ public class cellMain : MonoBehaviour
                 }
             }
         }
-        
         foreach (List<int> elem in tempheadRem)
         {
             removeCell(elem[0], elem[1], elem[2], "wormHead");
@@ -683,11 +771,59 @@ public class cellMain : MonoBehaviour
 
     //function to generate a specific cube at a specific location
     public void DrawBlock(int x, int y, int z, string val) {
-        GameObject clone = Instantiate(blockAtlas[atlas[val]], new Vector3(x - (mapX/2), y - (mapY/2), z - (mapZ/2)), Quaternion.Euler(-90,0,0)) as GameObject;
+        int yRot = 0, zRot = 0, xRot = -90;
+        if (val == "leaf") {
+            int leafOrientation = Random.Range(0, 6);
+            switch (leafOrientation) {
+                case 0:
+                    yRot = 0;
+                    zRot = 0;
+                    xRot = 0;
+                    break;
+                case 1:
+                    yRot = 0;
+                    zRot = 0;
+                    xRot = 90;
+                    break;
+                case 2:
+                    yRot = 0;
+                    zRot = 0;
+                    xRot = 180;
+                    break;
+                case 3:
+                    yRot = 0;
+                    zRot = 0;
+                    xRot = -90;
+                    break;
+                case 4:
+                    yRot = 90;
+                    zRot = 0;
+                    xRot = 0;
+                    break;
+                case 5:
+                    yRot = -90;
+                    zRot = 0;
+                    xRot = 0;
+                    break;
+                default:
+                    break;
+            }
+        }
+        GameObject clone = Instantiate(blockAtlas[atlas[val]], new Vector3(x - (mapX/2), y - (mapY/2), z - (mapZ/2)), Quaternion.Euler(xRot,yRot,zRot)) as GameObject;
         clone.transform.parent = mapHolder.transform;
         clone.AddComponent<blockReference>();
         clone.GetComponent<blockReference>().setReference(x, y, z, val);
         assetMap[x, y, z] = clone;
+
+        if (val == "grass") {
+            int grassChance = Random.Range(0, 100);
+            if (grassChance < grassAccentPercentage)
+            {
+                GameObject accent = Instantiate(grassAccent[Random.Range(0, grassAccent.Length)], new Vector3(x - (mapX / 2), y - (mapY / 2), z - (mapZ / 2)), Quaternion.Euler(0, Random.Range(0,360), 0)) as GameObject;
+                accent.transform.parent = clone.transform;
+
+            }
+        }
     }
 
     //generate cubes based on map values

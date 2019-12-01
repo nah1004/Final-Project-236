@@ -193,7 +193,7 @@ Light:
   m_BounceIntensity: 0
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 9.1835e-41, y: 1.8e-43, z: 0, w: 9.1835e-41}
+  m_BoundingSphereOverride: {x: 4.5905e-41, y: 0, z: 0, w: 2.5134132e-29}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -305,7 +305,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cam: {fileID: 702859440}
   camHolder: {fileID: 1703536419}
-  speed: 8
+  speed: 5
   lookSensitivity: 3
 --- !u!4 &212513122
 Transform:
@@ -315,7 +315,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 212513117}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 12, z: 0}
+  m_LocalPosition: {x: 0, y: -5, z: -20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1703536420}
@@ -369,7 +369,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -346.4, y: 224}
+  m_AnchoredPosition: {x: -345.7, y: 220}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &271659661
@@ -568,13 +568,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 702859440}
-  m_LocalRotation: {x: 0.25435477, y: -0, z: -0, w: 0.96711105}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 0.5, z: 1}
   m_Children: []
   m_Father: {fileID: 1703536420}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 29.471, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &819493673
 GameObject:
   m_ObjectHideFlags: 0
@@ -699,10 +699,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborhoodStyle: 1
-  mapX: 50
-  mapY: 60
-  mapZ: 50
+  mapX: 60
+  mapY: 40
+  mapZ: 30
   mapDensity: 47
+  treeCount: 5
   paddingRatio: 0.2
   smoothBool: 1
   smoothBias: 12
@@ -720,6 +721,11 @@ MonoBehaviour:
   - {fileID: 8124038735613676091, guid: f70fb8661bd92d346ae91598639eb21c, type: 3}
   - {fileID: 6971038719594773603, guid: 6ba981e76b7eba34490011580ca85bae, type: 3}
   - {fileID: 8543972661016453549, guid: c8b24909a12daaf4a9bd5fe60b617011, type: 3}
+  - {fileID: 6667230222848254974, guid: 8ad2956cbfaea164681ce9189aced6ad, type: 3}
+  grassAccent:
+  - {fileID: 6545955197857967691, guid: ae59fbd94aa4f15408146db6280cf251, type: 3}
+  - {fileID: 6273943117569325741, guid: 80a5faddcb47dda4e9b298c01c0b55fa, type: 3}
+  grassAccentPercentage: 20
 --- !u!4 &1076976709
 Transform:
   m_ObjectHideFlags: 0
@@ -783,9 +789,10 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 5dcbfb0b9d2842246bae0c9a2611a4b4, type: 3}
   - {fileID: 2800000, guid: 77bf9ff77dc77c140902d18241538e1b, type: 3}
   - {fileID: 2800000, guid: cd4428acd39bd0043b60c768f3cda763, type: 3}
-  - {fileID: 2800000, guid: 4585872a1cf714a4191584e1f6d90043, type: 3}
+  - {fileID: 2800000, guid: 1a02b5e1c0ae4c841ad484f0bcddc9e6, type: 3}
   - {fileID: 2800000, guid: 6fd4c21b491272647b8a7dc4cbd478c8, type: 3}
   - {fileID: 2800000, guid: a7c3c9dbf486d8047a824a2d9e227c7b, type: 3}
+  - {fileID: 2800000, guid: 5bbca33dc930fa94c91c3fa32f084a87, type: 3}
 --- !u!1 &1405473244
 GameObject:
   m_ObjectHideFlags: 0
