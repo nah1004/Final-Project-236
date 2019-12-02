@@ -483,12 +483,14 @@ public class cellMain : MonoBehaviour
         }
     }
 
-    // functino to check the water
+    // function to check the water
     public void flowWater() {
+		//tempory lists to avoid collection modification
         List<List<int>> tempflowAdd = new List<List<int>>();
         List<List<int>> tempsitAdd = new List<List<int>>();
         List<List<int>> tempflowRem = new List<List<int>>();
         List<List<int>> tempsitRem = new List<List<int>>();
+		//flowing water investigation
         foreach (List<int> elem in blocks["flowingWater"]) {
             int x = elem[0];
             int y = elem[1];
@@ -520,6 +522,7 @@ public class cellMain : MonoBehaviour
                 }
             }
         }
+		//sitting water investigation
        foreach(List<int> elem in blocks["sittingWater"]) {
             int x = elem[0];
             int y = elem[1];
@@ -528,14 +531,11 @@ public class cellMain : MonoBehaviour
             {   if (map[x, y - 1, z] == atlas["air"])
                 {
                     List<int> el = new List<int>();
-                    el.Add(x + 1);
+                    el.Add(x);
                     el.Add(y);
                     el.Add(z);
                     tempsitRem.Add(el);
                     tempflowAdd.Add(el);
-                    map[x, y - 1, z] = atlas["flowingWater"];
-                    map[x, y, z] = atlas["sittingWater"];
-
                 }
                 else
                 {
@@ -577,7 +577,7 @@ public class cellMain : MonoBehaviour
                     }
                 }
             }
-       }
+        }
         foreach (List<int> elem in tempflowRem)
         {
             removeCell(elem[0], elem[1], elem[2], "flowingWater");
