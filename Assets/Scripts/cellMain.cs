@@ -578,6 +578,7 @@ public class cellMain : MonoBehaviour
                 }
             }
         }
+		// handles cases for each temporary list / adding and removing
         foreach (List<int> elem in tempflowRem)
         {
             removeCell(elem[0], elem[1], elem[2], "flowingWater");
@@ -708,7 +709,7 @@ public class cellMain : MonoBehaviour
     }
 
     // for tranfering res map to map so i can ensure true Cellular Automaton generations
-    // that don't interfere with one another. Ahhhhhhh.. True Science. 
+    // that don't interfere with one another.
     public void pushTempToMap()
     {
         for (int x = 1; x < mapX - 1; x++){

@@ -36,6 +36,7 @@ public class characterMovement : MonoBehaviour
         if (Input.GetKey(KeyCode.Escape)) {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            Application.Quit();
         }
 
         //press w
